@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>680</width>
-    <height>450</height>
+    <height>724</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,7 +58,7 @@
      <rect>
       <x>130</x>
       <y>10</y>
-      <width>521</width>
+      <width>481</width>
       <height>31</height>
      </rect>
     </property>
@@ -101,7 +101,7 @@
    <widget class="QPushButton" name="connectButton">
     <property name="geometry">
      <rect>
-      <x>520</x>
+      <x>540</x>
       <y>70</y>
       <width>80</width>
       <height>24</height>
@@ -116,8 +116,8 @@
      <rect>
       <x>20</x>
       <y>110</y>
-      <width>591</width>
-      <height>171</height>
+      <width>631</width>
+      <height>161</height>
      </rect>
     </property>
     <attribute name="headerDefaultSectionSize">
@@ -170,8 +170,8 @@
    <widget class="QPushButton" name="downloadButton">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>300</y>
+      <x>540</x>
+      <y>350</y>
       <width>80</width>
       <height>24</height>
      </rect>
@@ -183,9 +183,9 @@
    <widget class="QPushButton" name="cdToParentButton">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>350</y>
-      <width>81</width>
+      <x>520</x>
+      <y>300</y>
+      <width>111</width>
       <height>31</height>
      </rect>
     </property>
@@ -204,6 +204,29 @@
     </property>
     <property name="value">
      <number>24</number>
+    </property>
+   </widget>
+   <widget class="QTreeView" name="treeView">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>380</y>
+      <width>601</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="uploadButton">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>610</y>
+      <width>80</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>上传</string>
     </property>
    </widget>
   </widget>

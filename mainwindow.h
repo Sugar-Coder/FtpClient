@@ -7,7 +7,6 @@ class MyFtp; // 自己实现的ftp
 
 #include <QHash>
 class QFile;
-class QUrlInfo;
 class QTreeWidgetItem;
 
 namespace Ui {
@@ -38,11 +37,13 @@ private slots:
 
     // 更新进度条
     void updateDataTransferProgress(qint64, qint64);
-    // 将服务器上的文件添加到TreeWidget部件中
-    void addToList(const QUrlInfo &urlInfo);
+    // 将服务器上的文件添加到TreeWidget部件中 TODO:参数类型
+    void addToList(); //const QUrlInfo &urlInfo);
     // 双击一个目录时显示其内容
     void processItem(QTreeWidgetItem*, int);
     void on_connectButton_clicked();
+    void on_cdToParentButton_clicked();
+    void on_downloadButton_clicked();
 };
 
 #endif // MAINWINDOW_H
