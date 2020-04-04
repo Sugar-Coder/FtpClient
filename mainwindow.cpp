@@ -115,7 +115,7 @@ void MainWindow::on_connectButton_clicked()
 }
 
 /**
- * @brief MainWindow::addToList
+ * @brief MainWindow::addToList 这是一个槽，等待着ftp发送信息
  * 将ftp返回的目录信息加入到QTreeWidgetItem中，并且对于目录保存到isDirectory中
  * @todo: 确定ftp信号传入的参数类型
  */
@@ -156,7 +156,7 @@ void MainWindow::on_cdToParentButton_clicked()
     } else {
         ftp->cd(currentPath);
     }
-    ftp->list();
+    ftp->list(); // 更新目录
 }
 
 /**

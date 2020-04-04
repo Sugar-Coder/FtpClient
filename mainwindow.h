@@ -32,8 +32,8 @@ private:
     Ui::MainWindow *ui;
 
 private slots:
-    void ftpCommandStarted(int); // param: ftp的命令
-    void ftpCommandFinished(int, bool); // param: ftp的命令和返回成功
+    void ftpCommandStarted(int); // 接受ftp的命令
+    void ftpCommandFinished(int, bool); // ftp的命令执行结束，bool变量表示执行成功与否
 
     // 更新进度条
     void updateDataTransferProgress(qint64, qint64);
@@ -41,6 +41,8 @@ private slots:
     void addToList(); //const QUrlInfo &urlInfo);
     // 双击一个目录时显示其内容
     void processItem(QTreeWidgetItem*, int);
+
+    // 按钮
     void on_connectButton_clicked();
     void on_cdToParentButton_clicked();
     void on_downloadButton_clicked();

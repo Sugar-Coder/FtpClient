@@ -10,7 +10,7 @@ private:
     int cur_command = -1; // 当前执行的指令
 public:
     void cd(QString directory); // 变更当前目录
-    void list(); // 显示当前目录
+    void list(); // 获取当前目录（并发送信号listInfo）
     void get(QString filename, QFile * file); // 下载文件
 public:
     MyFtp();
