@@ -1,18 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFile>
+#include <QDebug>
 #include <QTreeWidgetItem>
+#include <QFileDialog>
 
-#include "myftp.h"
+#include "qftp.h"
+#include <QTextCodec>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->progressBar->setValue(0);
+    this->initDisplay();
     connect(ui->fileList, &QTreeWidget::itemActivated,
             this, &MainWindow::processItem);
+
 }
 
 MainWindow::~MainWindow()
@@ -20,6 +24,18 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::initDisplay(){
+    ui->cdToParentButton->setEnabled(false);
+    ui->downloadButton->setEnabled(false);
+    ui->uploadButton->setEnabled(false);
+    ui->progressBar->setValue(0);
+
+    ui->fileList->setContextMenuPolicy(Qt::CustomContextMenu);
+    this->m_server_menu = new QMenu(this);
+
+    QAction * server_rm = new QAction(QObject::tr("删除"), this);
+    this->m_server_menu->addAction(server_rm);
+}
 /**
  * @brief MainWindow::ftpCommandStarted
  * 根据ftp执行的命令显示提示
@@ -29,17 +45,17 @@ void MainWindow::ftpCommandStarted(int)
     int id = ftp->currentCommand();
     switch (id)
     {
-    case MyFtp::ConnectToHost :
-        ui->label->setText(tr("正在连接到服务器…"));
+    case QFtp::ConnectToHost :
+        ui->ftpLabel->setText(tr("正在连接到服务器…"));
         break;
-    case MyFtp::Login :
-        ui->label->setText(tr("正在登录…"));
+    case QFtp::Login :
+        ui->ftpLabel->setText(tr("正在登录…"));
         break;
-    case MyFtp::Get :
-        ui->label->setText(tr("正在下载…"));
+    case QFtp::Get :
+        ui->ftpLabel->setText(tr("正在下载…"));
         break;
-    case MyFtp::Close :
-        ui->label->setText(tr("正在关闭连接…"));
+    case QFtp::Close :
+        ui->ftpLabel->setText(tr("正在关闭连接…"));
     }
 }
 
@@ -49,7 +65,7 @@ void MainWindow::ftpCommandStarted(int)
  * 根据命令执行结果显示信息
  */
 void MainWindow::ftpCommandFinished(int, bool error){
-    if(ftp->currentCommand() == MyFtp::ConnectToHost){
+    if(ftp->currentCommand() == QFtp::ConnectToHost){
         if (error)
             ui->ftpLabel->setText(
                         tr("连接服务器出现错误：%1").arg(ftp->errorString()));
@@ -58,7 +74,7 @@ void MainWindow::ftpCommandFinished(int, bool error){
             ui->connectButton->setText("已连接");
             ui->ftpLabel->setText(tr("连接服务器成功"));
         }
-    } else if (ftp->currentCommand() == MyFtp::Login) {
+    } else if (ftp->currentCommand() == QFtp::Login) {
         if (error){
             ui->ftpLabel->setText(tr("登录出现错误：%1").arg(ftp->errorString()));
         }
@@ -68,7 +84,7 @@ void MainWindow::ftpCommandFinished(int, bool error){
             ui->ftpLabel->setText(tr("登录成功"));
             ftp->list(); // 显示目录结构
         }
-    } else if (ftp->currentCommand() == MyFtp::Get){
+    } else if (ftp->currentCommand() == QFtp::Get){
         if(error)
             ui->ftpLabel->setText(tr("下载出现错误：%1")
                                   .arg(ftp->errorString()));
@@ -77,14 +93,47 @@ void MainWindow::ftpCommandFinished(int, bool error){
             file->close();
         }
         ui->downloadButton->setEnabled(true);
-    } else if (ftp->currentCommand() == MyFtp::List){
+    } else if (ftp->currentCommand() == QFtp::List){
         if (isDirectory.isEmpty()){
             ui->fileList->addTopLevelItem(
                         new QTreeWidgetItem(QStringList() << tr("<empty>")));
             ui->fileList->setEnabled(false);
             ui->ftpLabel->setText(tr("该目录为空"));
         }
-    } else if(ftp->currentCommand() == MyFtp::Close){
+    } else if(ftp->currentCommand() == QFtp::Put) {
+        if(error)
+            ui->label->setText(tr("上传出现错误：检查文件是否重名！").arg(ftp->errorString()));
+        else {
+            ui->label->setText(tr("上传完成"));
+            file->close();
+            // 只考虑单个文件的上传下载
+            isDirectory.clear();
+            ui->fileList->clear();
+            ftp->list();
+        }
+    } else if (ftp->currentCommand() == QFtp::Mkdir){
+        ui->label->setText(tr("新建文件夹完成"));
+        //刷新显示列表
+        isDirectory.clear();
+        ui->fileList->clear();
+        ftp->list();
+    }else if (ftp->currentCommand() == QFtp::Remove){
+        // currentIndex++;
+        // if(currentIndex >= indexCount){
+            ui->label->setText(tr("删除完成！"));
+            isDirectory.clear();
+            ui->fileList->clear();
+            ftp->list();
+        // }
+    }else if(ftp->currentCommand() == QFtp::Rmdir){
+        currentIndex++;
+        if(currentIndex >= indexCount){
+            ui->label->setText(tr("删除完成！"));
+            isDirectory.clear();
+            ui->fileList->clear();
+            ftp->list();
+        }
+    }else if(ftp->currentCommand() == QFtp::Close){
         ui->ftpLabel->setText(tr("已经关闭连接"));
     }
 }
@@ -98,15 +147,20 @@ void MainWindow::on_connectButton_clicked()
     ui->fileList->clear();
     currentPath.clear();
     isDirectory.clear();
-    ui->progressBar->setValue(0);
-    ftp = new MyFtp();
-    connect(ftp, &MyFtp::commandStarted, this,
+
+    ftp = new QFtp(this);
+    connect(ftp, &QFtp::commandStarted, this,
             &MainWindow::ftpCommandStarted); // 显示当前ftp执行的命令
-    connect(ftp, &MyFtp::commandFinished, this,
+    connect(ftp, &QFtp::commandFinished, this,
             &MainWindow::ftpCommandFinished); // 显示命令执行结果
-    connect(ftp, &MyFtp::listInfo, this, &MainWindow::addToList); // 显示文件列表
-    connect(ftp, &MyFtp::dataTransferProgress,
+    connect(ftp, &QFtp::listInfo, this, &MainWindow::addToList); // 显示文件列表
+    connect(ftp, &QFtp::dataTransferProgress,
             this, &MainWindow::updateDataTransferProgress); // 更新传输进度条
+    connect(ui->fileList, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showFtpTreeViewMenu(QPoint)));
+    //双击进入目录
+    connect(ui->fileList, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
+            this, SLOT(processItem(QTreeWidgetItem*, int)));
+
     QString ftpServer = ui->ftpServerlineEdit->text();
     QString userName = ui->userNamelineEdit->text();
     QString password = ui->passwordlineEdit->text();
@@ -119,8 +173,24 @@ void MainWindow::on_connectButton_clicked()
  * 将ftp返回的目录信息加入到QTreeWidgetItem中，并且对于目录保存到isDirectory中
  * @todo: 确定ftp信号传入的参数类型
  */
-void MainWindow::addToList(){
-
+void MainWindow::addToList(const QUrlInfo & urlInfo){
+    QString name = QString::fromUtf8(urlInfo.name().toLatin1());
+    QString owner = QString::fromUtf8(urlInfo.owner().toLatin1());
+    QString group = QString::fromUtf8(urlInfo.group().toLatin1());
+    QTreeWidgetItem * item = new QTreeWidgetItem;
+    item->setText(0, name);
+    item->setText(1, QString::number(urlInfo.size()));
+    item->setText(2, owner);
+    item->setText(3, group);
+    item->setText(4, urlInfo.lastModified().toString("yyy-MM-dd"));
+    QPixmap pixmap(urlInfo.isDir() ? "../picture/dir.png" : "../picture/file.png");
+    item->setIcon(0, pixmap);
+    isDirectory[name] = urlInfo.isDir();
+    ui->fileList->addTopLevelItem(item);
+    if(!ui->fileList->currentItem()){
+        ui->fileList->setCurrentItem(ui->fileList->topLevelItem(0));
+        ui->fileList->setEnabled(true);
+    }
 }
 
 /**
@@ -129,6 +199,8 @@ void MainWindow::addToList(){
  * cd到item对应的目录
  */
 void MainWindow::processItem(QTreeWidgetItem * item, int){
+    if(item->isDisabled())
+        return;
     if (isDirectory.value(item->text(0))) {
         QString name = QLatin1String(item->text(0).toUtf8());
         ui->fileList->clear();
@@ -147,9 +219,11 @@ void MainWindow::processItem(QTreeWidgetItem * item, int){
  */
 void MainWindow::on_cdToParentButton_clicked()
 {
+    qDebug() << "re:currentPath:" << currentPath;
     ui->fileList->clear();
     isDirectory.clear();
     currentPath = currentPath.left(currentPath.lastIndexOf('/'));
+    qDebug()<<"now:currentPath:"<<currentPath;
     if (currentPath.isEmpty()) {
         ui->cdToParentButton->setEnabled(false);
         ftp->cd("/");
@@ -165,6 +239,8 @@ void MainWindow::on_cdToParentButton_clicked()
  */
 void MainWindow::on_downloadButton_clicked()
 {
+    if(isDirectory.isEmpty())
+        return;
     QString fileName = ui->fileList->currentItem()->text(0);
     QString name = QLatin1String(fileName.toUtf8());
     file = new QFile(fileName);
@@ -179,4 +255,76 @@ void MainWindow::on_downloadButton_clicked()
 void MainWindow::updateDataTransferProgress(qint64 readBytes, qint64 totalBytes){
     ui->progressBar->setMaximum(totalBytes);
     ui->progressBar->setValue(readBytes);
+}
+
+// 右键filelist
+void MainWindow::showFtpTreeViewMenu(const QPoint &point){
+    QMenu* menu = new QMenu;
+    menu->addAction(QString(tr("新建文件夹")), this, SLOT(slotMkdir()));
+    menu->addAction(QString(tr("刷新")),this, SLOT(slotRefreshFtpList()));
+    menu->addAction(QString(tr("删除")), this, SLOT(slotDeleteFile()));
+    menu->exec(QCursor::pos());
+}
+// 刷新filelist
+void MainWindow::slotRefreshFtpList(){
+    isDirectory.clear();
+    ui->fileList->clear();
+    ftp->list();
+}
+
+// 新建目录
+void MainWindow::slotMkdir(){
+    qDebug() << "新建文件夹中...";
+    QString dirName = QInputDialog::getText(this, tr("新建文件夹"),
+                                            tr("文件夹名称"));
+    if(dirName.isEmpty() == false){
+        ftp->mkdir(QLatin1String(dirName.toUtf8()));
+    }
+}
+
+void MainWindow::slotDeleteFile(){
+    QModelIndexList indexList = ui->fileList->selectionModel()->selectedRows();
+    QString fileName;
+    currentIndex = 0;
+    indexCount = indexList.count();
+    ui->label->setText("正在删除....");
+    for(int i = 0;i < indexCount;i++)
+    {
+        fileName = indexList.at(i).data().toString();
+        if(isDirectory.value(fileName))
+            ftp->rmdir(QLatin1String(fileName.toUtf8()));
+        else
+            ftp->remove(QLatin1String(fileName.toUtf8()));
+    }
+}
+
+// 打开本地文件
+void MainWindow::openFile(){
+    filename = QFileDialog::getOpenFileName(this);
+    if(!filename.isEmpty()) {
+        ui->uploadButton->setEnabled(true);
+        ui->localFileLabel->setText(tr("打开文件 %1 成功").arg(filename));
+    }
+}
+
+void MainWindow::on_openButton_clicked()
+{
+    ui->localFileLabel->setText(tr("等待打开文件！"));
+    openFile();
+}
+
+// 文件上传
+void MainWindow::uploadLocalFile(){
+    localFile = new QFile(filename);
+    if(!file->open(QIODevice::ReadOnly)) {
+        delete localFile;
+        return;
+    }
+    QString name = QLatin1String(filename.toUtf8());
+    ftp->put(localFile, name);
+}
+
+void MainWindow::on_uploadButton_clicked()
+{
+    this->uploadLocalFile();
 }

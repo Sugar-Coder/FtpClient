@@ -27,11 +27,15 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    myftp.cpp
+        qftp.cpp \
+        qurlinfo.cpp
+    # myftp.cpp
 
 HEADERS += \
         mainwindow.h \
-    myftp.h
+        qftp.h \
+        qurlinfo.h
+    # myftp.h
 
 FORMS += \
         mainwindow.ui
