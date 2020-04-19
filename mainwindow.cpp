@@ -174,6 +174,7 @@ void MainWindow::on_connectButton_clicked()
  * @todo: 确定ftp信号传入的参数类型
  */
 void MainWindow::addToList(const QUrlInfo & urlInfo){
+    qDebug()<< "显示文件列表";
     QString name = QString::fromUtf8(urlInfo.name().toLatin1());
     QString owner = QString::fromUtf8(urlInfo.owner().toLatin1());
     QString group = QString::fromUtf8(urlInfo.group().toLatin1());
@@ -183,7 +184,7 @@ void MainWindow::addToList(const QUrlInfo & urlInfo){
     item->setText(2, owner);
     item->setText(3, group);
     item->setText(4, urlInfo.lastModified().toString("yyy-MM-dd"));
-    QPixmap pixmap(urlInfo.isDir() ? "../picture/dir.png" : "../picture/file.png");
+    QPixmap pixmap(urlInfo.isDir() ? ":/dir.png" : ":/file.png");
     item->setIcon(0, pixmap);
     isDirectory[name] = urlInfo.isDir();
     ui->fileList->addTopLevelItem(item);
@@ -207,6 +208,7 @@ void MainWindow::processItem(QTreeWidgetItem * item, int){
         isDirectory.clear();
         currentPath += "/";
         currentPath += name;
+        qDebug() << "currentPath" << currentPath;
         ftp->cd(name);
         ftp->list(); // 显示新的目录结构
         ui->cdToParentButton->setEnabled(true);
@@ -265,6 +267,7 @@ void MainWindow::showFtpTreeViewMenu(const QPoint &point){
     menu->addAction(QString(tr("删除")), this, SLOT(slotDeleteFile()));
     menu->exec(QCursor::pos());
 }
+// 以下是右键菜单功能
 // 刷新filelist
 void MainWindow::slotRefreshFtpList(){
     isDirectory.clear();
@@ -322,9 +325,12 @@ void MainWindow::uploadLocalFile(){
     }
     QString name = QLatin1String(filename.toUtf8());
     ftp->put(localFile, name);
+    filename = "";
 }
 
 void MainWindow::on_uploadButton_clicked()
 {
-    this->uploadLocalFile();
+    if(filename.isEmpty())
+        return;
+    uploadLocalFile();
 }

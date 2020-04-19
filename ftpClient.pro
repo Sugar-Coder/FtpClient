@@ -29,13 +29,11 @@ SOURCES += \
         mainwindow.cpp \
         qftp.cpp \
         qurlinfo.cpp
-    # myftp.cpp
 
 HEADERS += \
         mainwindow.h \
         qftp.h \
         qurlinfo.h
-    # myftp.h
 
 FORMS += \
         mainwindow.ui
@@ -44,3 +42,8 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES +=
+
+RESOURCES += \
+    ./picture/picture.qrc
