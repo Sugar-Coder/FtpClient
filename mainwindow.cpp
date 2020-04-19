@@ -14,8 +14,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     this->initDisplay();
-    connect(ui->fileList, &QTreeWidget::itemActivated,
-            this, &MainWindow::processItem);
 
 }
 
@@ -157,9 +155,9 @@ void MainWindow::on_connectButton_clicked()
     connect(ftp, &QFtp::dataTransferProgress,
             this, &MainWindow::updateDataTransferProgress); // 更新传输进度条
     connect(ui->fileList, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showFtpTreeViewMenu(QPoint)));
-    //双击进入目录
-    connect(ui->fileList, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
-            this, SLOT(processItem(QTreeWidgetItem*, int)));
+    // 双击进入目录
+    connect(ui->fileList, &QTreeWidget::itemActivated,
+            this, &MainWindow::processItem);
 
     QString ftpServer = ui->ftpServerlineEdit->text();
     QString userName = ui->userNamelineEdit->text();
