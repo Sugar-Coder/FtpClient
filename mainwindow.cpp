@@ -103,7 +103,7 @@ void MainWindow::ftpCommandFinished(int, bool error){
             ui->label->setText(tr("上传出现错误：检查文件是否重名！").arg(ftp->errorString()));
         else {
             ui->label->setText(tr("上传完成"));
-            file->close();
+            localFile->close();
             // 只考虑单个文件的上传下载
             isDirectory.clear();
             ui->fileList->clear();
@@ -317,11 +317,11 @@ void MainWindow::on_openButton_clicked()
 // 文件上传
 void MainWindow::uploadLocalFile(){
     localFile = new QFile(filename);
-    if(!file->open(QIODevice::ReadOnly)) {
+    if(!localFile->open(QIODevice::ReadOnly)) {
         delete localFile;
         return;
     }
-    QString name = QLatin1String(filename.toUtf8());
+    QString name = QFileInfo(filename).fileName();
     ftp->put(localFile, name);
     filename = "";
 }
