@@ -181,7 +181,7 @@ void MainWindow::addToList(const QUrlInfo & urlInfo){
     item->setText(1, QString::number(urlInfo.size()));
     item->setText(2, owner);
     item->setText(3, group);
-    item->setText(4, urlInfo.lastModified().toString("yyy-MM-dd"));
+    item->setText(4, urlInfo.lastModified().toString("yyyy-MM-dd"));
     QPixmap pixmap(urlInfo.isDir() ? ":/dir.png" : ":/file.png");
     item->setIcon(0, pixmap);
     isDirectory[name] = urlInfo.isDir();
