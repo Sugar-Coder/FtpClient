@@ -267,6 +267,17 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>ftpServerlineEdit</tabstop>
+  <tabstop>userNamelineEdit</tabstop>
+  <tabstop>passwordlineEdit</tabstop>
+  <tabstop>connectButton</tabstop>
+  <tabstop>fileList</tabstop>
+  <tabstop>cdToParentButton</tabstop>
+  <tabstop>openButton</tabstop>
+  <tabstop>downloadButton</tabstop>
+  <tabstop>uploadButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
